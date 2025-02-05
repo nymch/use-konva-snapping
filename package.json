@@ -6,6 +6,41 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "konva",
+    "react-konva",
+    "konva-snapping",
+    "drag-and-drop",
+    "guidelines",
+    "snap-to-grid",
+    "canvas-snapping",
+    "konva-guidelines",
+    "konva-drag",
+    "konva-resize",
+    "konva-helpers",
+    "konva-snap",
+    "alignment",
+    "graphics",
+    "UI-UX",
+    "react"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/faridmth/use-konva-snapping.git"
+  },
+  "homepage": "https://github.com/faridmth/use-konva-snapping",
+  "bugs": {
+    "url": "https://github.com/faridmth/use-konva-snapping/issues"
+  },
+  "files": [
+    "use-konva-snapping.js",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "konva": ">=9.0.0",
+    "react": ">=18.0.0",
+    "react-konva": ">=18.0.0"
+  },
   "author": "faridmth",
   "license": "ISC"
 }
