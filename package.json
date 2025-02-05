@@ -1,6 +1,6 @@
 {
   "name": "use-konva-snapping",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A lightweight React hook for adding snapping functionality to Konva.js elements. It allows objects to snap to stage borders, center, and other shapes, with customizable guidelines and snapping sensitivity.",
   "main": "use-konva-snapping.js",
   "scripts": {
