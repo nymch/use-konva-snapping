@@ -1,7 +1,7 @@
 
 # use-konva-snapping
 
-A lightweight React hook for adding snapping functionality to Konva.js elements. It enables elements to snap to stage borders, the center of the stage, and other shapes, with customizable guidelines and snapping sensitivity. Ideal for creating interactive graphics, drag-and-drop features, and alignment in canvas-based UIs.
+A lightweight React hook for adding snapping functionality to Konva.js elements. It enables elements to snap to stage borders, the center of the stage, and other shapes, with customizable guidelines and snapping sensitivity.
 
 ---
 
