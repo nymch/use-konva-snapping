@@ -12,6 +12,12 @@ export const useKonvaSnapping = (params) => {
         snapToStageBorders:params.snapToStageBorders??true,
         snapToShapes:params.snapToShapes??true
     }
+    const oppositeAnchors = {
+        "top-left": "bottom-right",
+        "top-right": "bottom-left",
+        "bottom-right": "top-left",
+        "bottom-left": "top-right",
+      };
 
     const getSnappingPoints = (e) => {
         const{snapToStageCenter,snapToStageBorders,snapToShapes} = defaultParams
@@ -60,6 +66,32 @@ export const useKonvaSnapping = (params) => {
         Layer.add(line);
         line.absolutePosition({ x: lineX, y: lineY });
     };
+    function dotProduct(v1, v2) {
+        return v1.x * v2.x + v1.y * v2.y;
+      }
+      
+      function vectorProject(a, b) {
+        const dotAB = dotProduct(a, b);
+        const dotBB = dotProduct(b, b);
+        const scalar = dotAB / dotBB;
+        return {
+          x: scalar * b.x,
+          y: scalar * b.y,
+        };
+      }
+    
+      function calculateSlope(point1, point2) {
+        const deltaX = point2.x - point1.x;
+      
+        // Check for a vertical line to avoid division by zero
+        if (deltaX === 0) {
+          
+          throw new Error(`Slope is undefined for vertical lines (deltaX is zero). ${point2.x}, ${point1.x}`);
+        }
+      
+        const deltaY = point2.y - point1.y;
+        return deltaY / deltaX;
+      }
 
     const handleDragging = (e) => {
 
@@ -123,30 +155,98 @@ export const useKonvaSnapping = (params) => {
     };
 
     const handleResizing = (e) => {
-        if (e.currentTarget.getActiveAnchor() === 'rotater') return
         const Layer = e.target.parent;
         const { snapRange } = defaultParams;
         const { horizontal, vertical } = getSnappingPoints(e);
-        e.currentTarget.anchorDragBoundFunc((oldAbsPos, newAbsPos, event) => {
-            let bounds = { x: newAbsPos.x, y: newAbsPos.y };
-            Layer.find(".guid-line").forEach((line) => line.destroy());
-            for (let breakPoint of vertical) {
-                if (Math.abs(newAbsPos.x - breakPoint) <= snapRange) {
-                    bounds.x = breakPoint;
-                    createLine(Layer, false, breakPoint, 0);
-                    break;
+        console.log(!!!oppositeAnchors[e.currentTarget._movingAnchorName])
+        if(!e.currentTarget.keepRatio() || (e.currentTarget.keepRatio() && !!!oppositeAnchors[e.currentTarget._movingAnchorName])){
+            e.currentTarget.anchorDragBoundFunc((oldAbsPos, newAbsPos, event) => {
+                        let bounds = { x: newAbsPos.x, y: newAbsPos.y };
+                        if (e.currentTarget.getActiveAnchor() === 'rotater') return bounds
+                        Layer.find(".guid-line").forEach((line) => line.destroy());
+                        for (let breakPoint of vertical) {
+                            if (Math.abs(newAbsPos.x - breakPoint) <= snapRange) {
+                                bounds.x = breakPoint;
+                                createLine(Layer, false, breakPoint, 0);
+                                break;
+                            }
+                        }
+                        for (let breakPoint of horizontal) {
+                            if (Math.abs(newAbsPos.y - breakPoint) <= snapRange) {
+                                bounds.y = breakPoint;
+                                createLine(Layer, true, 0,breakPoint);
+                                break;
+                            }
+                        }
+
+                        return bounds;
+            })
+        }else{
+            e.currentTarget.anchorDragBoundFunc((oldAbsPos, newPos, event) => {
+                Layer.find(".guid-line").forEach((line) => line.destroy());
+          
+                const currentAnchorName = e.currentTarget._movingAnchorName;
+                const oppositeAnchorName = oppositeAnchors[currentAnchorName];
+            
+                const movingAnchor = e.currentTarget.findOne(`.${currentAnchorName}`);
+                // Capture the anchor's starting absolute position:
+                const anchorStartPosition = movingAnchor.getAbsolutePosition();
+            
+                // Do nothing for the rotater anchor.
+                if (currentAnchorName === "rotater") {
+                  return newPos;
                 }
-            }
-            for (let breakPoint of horizontal) {
-                if (Math.abs(newAbsPos.y - breakPoint) <= snapRange) {
-                    bounds.y = breakPoint;
+                
+                const oppositeElement = e.currentTarget.findOne(`.${oppositeAnchorName}`);
+                if (!oppositeElement) return newPos;
+                const oppositePoint = oppositeElement.getAbsolutePosition();
+                
+                const slope = calculateSlope(anchorStartPosition, oppositePoint);
+          
+            
+                // Calculate the vector from the starting anchor position to the opposite anchor.
+                const transformVector = {
+                  x: anchorStartPosition.x - oppositePoint.x,
+                  y: anchorStartPosition.y - oppositePoint.y,
+                };
+            
+                // Compute the movement delta from the starting position.
+                const delta = {
+                  x: newPos.x - anchorStartPosition.x,
+                  y: newPos.y - anchorStartPosition.y,
+                };
+            
+                // Project the delta onto the transform vector.
+                const projectedDelta = vectorProject(delta, transformVector);
+            
+                // Compute the candidate new position (before snapping).
+                const nextPos = {
+                  x: anchorStartPosition.x + projectedDelta.x,
+                  y: anchorStartPosition.y + projectedDelta.y,
+                };
+          
+                for (let breakPoint of horizontal) {
+                  if (Math.abs(nextPos.y - breakPoint) <= snapRange) {
+                    nextPos.y = breakPoint;
+                    nextPos.x = anchorStartPosition.x + (breakPoint - anchorStartPosition.y) / slope;
                     createLine(Layer, true, 0,breakPoint);
                     break;
-                }
-            }
-
-            return bounds;
-        })
+                  }
+              }
+              for (let breakPoint of vertical) {
+                  if (Math.abs(nextPos.x - breakPoint) <= snapRange) {
+                    console.log('snapp')
+                    nextPos.x = breakPoint;
+                    nextPos.y= anchorStartPosition.y + slope * (breakPoint - anchorStartPosition.x)
+                      createLine(Layer, false,breakPoint, 0);
+                      break;
+                  }
+              }
+              
+              return nextPos;
+              });
+        }
+       
     };   
     
     const handleResizeEnd = (e) =>{
