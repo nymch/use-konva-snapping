@@ -157,13 +157,13 @@ export const useKonvaSnapping = (params) => {
     const handleResizing = (e) => {
         const Layer = e.target.parent;
         const { snapRange } = defaultParams;
-        const { horizontal, vertical } = getSnappingPoints(e);
-        console.log(!!!oppositeAnchors[e.currentTarget._movingAnchorName])
         if(!e.currentTarget.keepRatio() || (e.currentTarget.keepRatio() && !!!oppositeAnchors[e.currentTarget._movingAnchorName])){
             e.currentTarget.anchorDragBoundFunc((oldAbsPos, newAbsPos, event) => {
+                        const { horizontal, vertical } = getSnappingPoints(e);
+
+                        Layer.find(".guid-line").forEach((line) => line.destroy());
                         let bounds = { x: newAbsPos.x, y: newAbsPos.y };
                         if (e.currentTarget.getActiveAnchor() === 'rotater') return bounds
-                        Layer.find(".guid-line").forEach((line) => line.destroy());
                         for (let breakPoint of vertical) {
                             if (Math.abs(newAbsPos.x - breakPoint) <= snapRange) {
                                 bounds.x = breakPoint;
@@ -183,8 +183,8 @@ export const useKonvaSnapping = (params) => {
             })
         }else{
             e.currentTarget.anchorDragBoundFunc((oldAbsPos, newPos, event) => {
-                Layer.find(".guid-line").forEach((line) => line.destroy());
-          
+            const { horizontal, vertical } = getSnappingPoints(e);
+               Layer.find(".guid-line").forEach((line) => line.destroy());      
                 const currentAnchorName = e.currentTarget._movingAnchorName;
                 const oppositeAnchorName = oppositeAnchors[currentAnchorName];
             
@@ -235,7 +235,6 @@ export const useKonvaSnapping = (params) => {
               }
               for (let breakPoint of vertical) {
                   if (Math.abs(nextPos.x - breakPoint) <= snapRange) {
-                    console.log('snapp')
                     nextPos.x = breakPoint;
                     nextPos.y= anchorStartPosition.y + slope * (breakPoint - anchorStartPosition.x)
                       createLine(Layer, false,breakPoint, 0);
