@@ -21,7 +21,7 @@ export const useKonvaSnapping = (params) => {
 
     const getSnappingPoints = (e) => {
         const{snapToStageCenter,snapToStageBorders,snapToShapes} = defaultParams
-        const stage = e.target.getStage();
+        const stage = e.currentTarget.getStage();
         const vertical = [];
         const horizontal = [];
         if(snapToStageCenter){
@@ -37,7 +37,7 @@ export const useKonvaSnapping = (params) => {
                 layer.children.forEach((obj) => {
                     const box = obj.getClientRect();
     
-                    if (obj.getType() === "Shape" && e.target !== obj && obj.getName()!=="guid-line") {
+                    if (obj.getType() === "Shape" && e.target !== obj && obj.getName()!=="guid-line" && !(obj instanceof Konva.Transformer)) {
                         vertical.push(box.x, box.x + box.width, box.x + box.width / 2);
                         horizontal.push(box.y, box.y + box.height, box.y + box.height / 2);
                     }
@@ -94,7 +94,6 @@ export const useKonvaSnapping = (params) => {
       }
 
     const handleDragging = (e) => {
-
         const Layer = e.target.parent;
         // Clear existing guidelines
         Layer.find(".guid-line").forEach((line) => line.destroy());
@@ -153,13 +152,20 @@ export const useKonvaSnapping = (params) => {
             }
         })
     };
+    const verticalAnchors = ["top-center","bottom-center"]
+    const horizontalAnchors = ["middle-left","middle-right"]
 
     const handleResizing = (e) => {
         const Layer = e.target.parent;
         const { snapRange } = defaultParams;
         if(!e.currentTarget.keepRatio() || (e.currentTarget.keepRatio() && !!!oppositeAnchors[e.currentTarget._movingAnchorName])){
             e.currentTarget.anchorDragBoundFunc((oldAbsPos, newAbsPos, event) => {
-                        const { horizontal, vertical } = getSnappingPoints(e);
+                        let { horizontal, vertical } = getSnappingPoints(e);
+                        if(verticalAnchors.includes(e.currentTarget._movingAnchorName)){
+                            vertical = []
+                        }else{
+                            horizontal = []
+                        }
 
                         Layer.find(".guid-line").forEach((line) => line.destroy());
                         let bounds = { x: newAbsPos.x, y: newAbsPos.y };
