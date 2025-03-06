@@ -95,6 +95,8 @@ export const useKonvaSnapping = (params) => {
 
     const handleDragging = (e) => {
         const Layer = e.target.parent;
+        console.log(e.target)
+
         // Clear existing guidelines
         Layer.find(".guid-line").forEach((line) => line.destroy());
         const { horizontal, vertical } = getSnappingPoints(e);
@@ -152,33 +154,33 @@ export const useKonvaSnapping = (params) => {
             }
         })
     };
-    const verticalAnchors = ["top-center","bottom-center"]
-    const horizontalAnchors = ["middle-left","middle-right"]
 
     const handleResizing = (e) => {
         const Layer = e.target.parent;
         const { snapRange } = defaultParams;
+
+        let { horizontal, vertical } = getSnappingPoints(e);
         if(!e.currentTarget.keepRatio() || (e.currentTarget.keepRatio() && !!!oppositeAnchors[e.currentTarget._movingAnchorName])){
             e.currentTarget.anchorDragBoundFunc((oldAbsPos, newAbsPos, event) => {
-                        let { horizontal, vertical } = getSnappingPoints(e);
-                        if(verticalAnchors.includes(e.currentTarget._movingAnchorName)){
-                            vertical = []
-                        }else{
-                            horizontal = []
-                        }
-
-                        Layer.find(".guid-line").forEach((line) => line.destroy());
+                console.log(e.target)
+       
+                Layer.find(".guid-line").forEach((line) => line.destroy());
                         let bounds = { x: newAbsPos.x, y: newAbsPos.y };
+                        //console.log(Konva.Util.haveIntersection(e.target.getClientRect(),breakPoint))
                         if (e.currentTarget.getActiveAnchor() === 'rotater') return bounds
                         for (let breakPoint of vertical) {
-                            if (Math.abs(newAbsPos.x - breakPoint) <= snapRange) {
+                            if (Math.abs(newAbsPos.x - breakPoint) <= snapRange &&
+                            Math.abs(oldAbsPos.x - breakPoint) <= snapRange + 1
+                            ) {
                                 bounds.x = breakPoint;
                                 createLine(Layer, false, breakPoint, 0);
                                 break;
                             }
                         }
                         for (let breakPoint of horizontal) {
-                            if (Math.abs(newAbsPos.y - breakPoint) <= snapRange) {
+                            if (Math.abs(newAbsPos.y - breakPoint) <= snapRange && 
+                            Math.abs(oldAbsPos.y - breakPoint) <= snapRange + 1
+                            ) {
                                 bounds.y = breakPoint;
                                 createLine(Layer, true, 0,breakPoint);
                                 break;
@@ -189,7 +191,6 @@ export const useKonvaSnapping = (params) => {
             })
         }else{
             e.currentTarget.anchorDragBoundFunc((oldAbsPos, newPos, event) => {
-            const { horizontal, vertical } = getSnappingPoints(e);
                Layer.find(".guid-line").forEach((line) => line.destroy());      
                 const currentAnchorName = e.currentTarget._movingAnchorName;
                 const oppositeAnchorName = oppositeAnchors[currentAnchorName];
@@ -256,6 +257,10 @@ export const useKonvaSnapping = (params) => {
     
     const handleResizeEnd = (e) =>{
         const Layer = e.target.parent;
+        e.currentTarget.anchorDragBoundFunc((oldAbsPos, newPos, event) => {
+            return newPos
+        })
+        console.log(e.currentTarget.anchorDragBoundFunc())
         Layer.find(".guid-line").forEach((line) => line.destroy());
     }
     const handleDragEnd = (e) =>{
