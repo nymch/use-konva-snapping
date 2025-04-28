@@ -95,7 +95,6 @@ export const useKonvaSnapping = (params) => {
 
     const handleDragging = (e) => {
         const Layer = e.target.parent;
-        console.log(e.target)
 
         // Clear existing guidelines
         Layer.find(".guid-line").forEach((line) => line.destroy());
@@ -162,11 +161,9 @@ export const useKonvaSnapping = (params) => {
         let { horizontal, vertical } = getSnappingPoints(e);
         if(!e.currentTarget.keepRatio() || (e.currentTarget.keepRatio() && !!!oppositeAnchors[e.currentTarget._movingAnchorName])){
             e.currentTarget.anchorDragBoundFunc((oldAbsPos, newAbsPos, event) => {
-                console.log(e.target)
        
                 Layer.find(".guid-line").forEach((line) => line.destroy());
                         let bounds = { x: newAbsPos.x, y: newAbsPos.y };
-                        //console.log(Konva.Util.haveIntersection(e.target.getClientRect(),breakPoint))
                         if (e.currentTarget.getActiveAnchor() === 'rotater') return bounds
                         for (let breakPoint of vertical) {
                             if (Math.abs(newAbsPos.x - breakPoint) <= snapRange &&
@@ -260,7 +257,6 @@ export const useKonvaSnapping = (params) => {
         e.currentTarget.anchorDragBoundFunc((oldAbsPos, newPos, event) => {
             return newPos
         })
-        console.log(e.currentTarget.anchorDragBoundFunc())
         Layer.find(".guid-line").forEach((line) => line.destroy());
     }
     const handleDragEnd = (e) =>{
