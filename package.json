@@ -1,9 +1,21 @@
 {
   "name": "use-konva-snapping",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "A lightweight React hook for adding snapping functionality to Konva.js elements. It allows objects to snap to stage borders, center, and other shapes, with customizable guidelines and snapping sensitivity.",
-  "main": "use-konva-snapping.js",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -26,20 +38,25 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/faridmth/use-konva-snapping.git"
+    "url": "https://github.com/nymch/use-konva-snapping.git"
   },
-  "homepage": "https://github.com/faridmth/use-konva-snapping",
+  "homepage": "https://github.com/nymch/use-konva-snapping",
   "bugs": {
-    "url": "https://github.com/faridmth/use-konva-snapping/issues"
+    "url": "https://github.com/nymch/use-konva-snapping/issues"
   },
   "files": [
-    "use-konva-snapping.js",
+    "dist",
     "README.md"
   ],
   "peerDependencies": {
     "konva": ">=9.0.0",
     "react": ">=18.0.0",
     "react-konva": ">=18.0.0"
+  },
+  "devDependencies": {
+    "konva": "^9.3.22",
+    "prettier": "^3.2.5",
+    "typescript": "5.5.4"
   },
   "author": "faridmth",
   "license": "ISC"
