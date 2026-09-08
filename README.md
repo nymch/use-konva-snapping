@@ -1,11 +1,12 @@
-
 # use-konva-snapping
 
 A lightweight React hook for adding snapping functionality to Konva.js elements. It enables elements to snap to stage borders, the center of the stage, and other shapes, with customizable guidelines and snapping sensitivity.
 
+> Fork of [faridmth/use-konva-snapping](https://github.com/faridmth/use-konva-snapping) by [Farid Methia](https://github.com/faridmth). This fork is written in TypeScript and ships its own type definitions. The snapping behaviour is unchanged.
+
 ---
 
-# <a href="https://codesandbox.io/p/sandbox/ysz9q6" target="_blank">DEMO</a>  
+# <a href="https://codesandbox.io/p/sandbox/ysz9q6" target="_blank">DEMO</a>
 
 ## Features
 
@@ -24,11 +25,13 @@ A lightweight React hook for adding snapping functionality to Konva.js elements.
 To install `use-konva-snapping`, you can use npm or yarn:
 
 ### Using npm:
+
 ```bash
 npm install use-konva-snapping
 ```
 
 ### Using yarn:
+
 ```bash
 yarn add use-konva-snapping
 ```
@@ -40,6 +43,7 @@ yarn add use-konva-snapping
 Once installed, you can use the `useKonvaSnapping` hook to enable snapping for Konva elements in your React app. Here's how to set it up:
 
 ### Step 1: Import the Hook
+
 Import the `useKonvaSnapping` hook into your React component.
 
 ```javascript
@@ -47,6 +51,7 @@ import { useKonvaSnapping } from "use-konva-snapping";
 ```
 
 ### Step 2: Use the Hook
+
 Use the hook to get the snapping functionality and attach it to your Konva elements. Below is an example of a basic implementation where you can add draggable shapes and make them snap to the stage and other shapes.
 
 ```javascript
@@ -192,8 +197,6 @@ const App = () => {
   );
 };
 export default App;
-
-
 ```
 
 ### Step 3: Customize Options (Optional)
@@ -218,6 +221,37 @@ export default App;
 - `handleDragEnd`: Attach this method to `onDragEnd` of Konva elements.
 - `handleResizeEnd`: Attach this method to `onResizeEnd` of Konva Transformer.
 
+---
+
+## TypeScript
+
+Type definitions ship with the package, so no separate `@types/...` install is needed. Both the parameter and the return types are exported so you can reuse them:
+
+```typescript
+import { useKonvaSnapping } from "use-konva-snapping";
+import type {
+  UseKonvaSnappingParams,
+  UseKonvaSnappingResult,
+} from "use-konva-snapping";
+
+const options: UseKonvaSnappingParams = {
+  guidelineColor: "blue",
+  snapRange: 5,
+};
+
+const handlers: UseKonvaSnappingResult = useKonvaSnapping(options);
+```
+
+The handlers are typed with Konva's own event types and can be passed directly to `react-konva`:
+
+- `handleDragging` and `handleDragEnd` take a `Konva.KonvaEventObject<DragEvent>`, matching `onDragMove` and `onDragEnd`.
+- `handleResizing` and `handleResizeEnd` take a `Konva.KonvaEventObject<Event>`, matching `onTransform` and `onTransformEnd`.
+
+Every option is optional, but the parameter object itself is required. Call `useKonvaSnapping({})` to take all the defaults.
+
+The package is ESM only (`"type": "module"` with an `exports` map). Import it; `require()` is not supported.
+
+---
 
 Author: <a href="https://www.linkedin.com/in/farid-methia/" target="_blank">Farid Methia</a>  
 GitHub: <a href="https://github.com/faridmth" target="_blank">faridmth</a>  
