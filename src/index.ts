@@ -123,15 +123,15 @@ export const useKonvaSnapping = (
 
   function calculateSlope(point1: Konva.Vector2d, point2: Konva.Vector2d) {
     const deltaX = point2.x - point1.x;
+    const deltaY = point2.y - point1.y;
 
-    // Check for a vertical line to avoid division by zero
+    // 対角線が画面上で垂直になるとdeltaXが0になる。回転したオブジェクトを角アンカーで
+    // リサイズすれば回転角によって普通に起きる状態で、アンカーは対角線上を動けるため
+    // 操作自体は成立する。例外で止めず傾きを無限大として返し、呼び出し側で場合分けする
     if (deltaX === 0) {
-      throw new Error(
-        `Slope is undefined for vertical lines (deltaX is zero). ${point2.x}, ${point1.x}`,
-      );
+      return deltaY > 0 ? Infinity : -Infinity;
     }
 
-    const deltaY = point2.y - point1.y;
     return deltaY / deltaX;
   }
 
@@ -357,24 +357,37 @@ export const useKonvaSnapping = (
             y: anchorStartPosition.y + projectedDelta.y,
           };
 
-          for (let breakPoint of horizontal) {
-            if (Math.abs(nextPos.y - breakPoint) <= snapRange) {
-              nextPos.y = breakPoint;
-              nextPos.x =
-                anchorStartPosition.x +
-                (breakPoint - anchorStartPosition.y) / slope;
-              createLine(layer, true, 0, breakPoint);
-              break;
+          // 対角線が水平（slopeが0）のとき、アンカーの移動方向にy成分が無いため水平な
+          // ガイドラインへは寄せられない。(breakPoint - y0) / 0 は±InfinityかNaNになり
+          // nextPos.xを壊すので、スナップ自体をスキップする。
+          // slopeが±Infinityのときはこのループを通してよい。(breakPoint - y0) / Infinity が
+          // 0へ収束してnextPos.xがanchorStartPosition.xのまま保たれ、垂直な対角線上を
+          // 動くという拘束と一致する
+          if (slope !== 0) {
+            for (let breakPoint of horizontal) {
+              if (Math.abs(nextPos.y - breakPoint) <= snapRange) {
+                nextPos.y = breakPoint;
+                nextPos.x =
+                  anchorStartPosition.x +
+                  (breakPoint - anchorStartPosition.y) / slope;
+                createLine(layer, true, 0, breakPoint);
+                break;
+              }
             }
           }
-          for (let breakPoint of vertical) {
-            if (Math.abs(nextPos.x - breakPoint) <= snapRange) {
-              nextPos.x = breakPoint;
-              nextPos.y =
-                anchorStartPosition.y +
-                slope * (breakPoint - anchorStartPosition.x);
-              createLine(layer, false, breakPoint, 0);
-              break;
+          // 対角線が垂直（slopeが±Infinity）のとき、アンカーの移動方向にx成分が無いため
+          // 垂直なガイドラインへは寄せられない。slope * (breakPoint - x0) は
+          // breakPoint === x0 で Infinity * 0 となりNaNになるため、ガードは必須
+          if (Number.isFinite(slope)) {
+            for (let breakPoint of vertical) {
+              if (Math.abs(nextPos.x - breakPoint) <= snapRange) {
+                nextPos.x = breakPoint;
+                nextPos.y =
+                  anchorStartPosition.y +
+                  slope * (breakPoint - anchorStartPosition.x);
+                createLine(layer, false, breakPoint, 0);
+                break;
+              }
             }
           }
 
